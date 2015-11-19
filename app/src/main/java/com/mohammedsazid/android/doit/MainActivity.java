@@ -23,14 +23,90 @@
 
 package com.mohammedsazid.android.doit;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.TextView;
+
+import com.mohammedsazid.android.doit.services.TimerService;
+
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    BroadcastReceiver timerBroadcastReceiver;
+
+    //    private FloatingActionButton mTimerBtn;
+    private TextView mTimerTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        bindViews();
+        acquireLock();
+    }
+
+    private void bindViews() {
+//        mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
+        mTimerTv = (TextView) findViewById(R.id.timerTv);
+    }
+
+    private void acquireLock() {
+        getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerTimerTickReceiver();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (timerBroadcastReceiver != null)
+            unregisterReceiver(timerBroadcastReceiver);
+    }
+
+    private void registerTimerTickReceiver() {
+        timerBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(TimerService.ACTION_TIMER_TICK)) {
+                    SimpleDateFormat sdf =
+                            new SimpleDateFormat("mm:ss", Locale.getDefault());
+                    String timerText = sdf.format(intent.getLongExtra(
+                            TimerService.EXTRA_REMAINING_TIME,
+                            System.currentTimeMillis())) + "m";
+                    mTimerTv.setText(timerText);
+                }
+            }
+        };
+        registerReceiver(timerBroadcastReceiver,
+                new IntentFilter(TimerService.ACTION_TIMER_TICK));
+    }
+
+    public void toggleTimer(View view) {
+        if (!TimerService.SERVICE_IS_RUNNING) {
+            Log.d("CLICK", "Starting service");
+            Intent intent = new Intent(this, TimerService.class);
+            startService(intent);
+        } else {
+            Log.d("CLICK", "Stopping service");
+            Intent intent = new Intent(this, TimerService.class);
+            stopService(intent);
+            mTimerTv.setText("25:00m");
+        }
+        TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
     }
 }
