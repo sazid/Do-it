@@ -23,11 +23,13 @@
 
 package com.mohammedsazid.android.doit.services;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -100,6 +102,16 @@ public class TimerService extends Service {
                 .build();
 
         startForeground(23, notification);
+
+        Intent i = new Intent(this, BreakNotifyService.class);
+        PendingIntent breakServicePi = PendingIntent.getService(
+                this,
+                64,
+                i,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        am.cancel(breakServicePi);
     }
 
     private void notifyTaskFinished() {
@@ -156,6 +168,21 @@ public class TimerService extends Service {
         SERVICE_IS_RUNNING = false;
         stopForeground(true);
         notifyTaskFinished();
+
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent i = new Intent(this, BreakNotifyService.class);
+        PendingIntent pi = PendingIntent.getService(
+                this,
+                64,
+                i,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + BREAK_TIME, pi);
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + BREAK_TIME, pi);
+        }
+
         stopSelf();
     }
 }
