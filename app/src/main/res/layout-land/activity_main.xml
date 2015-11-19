@@ -47,11 +47,11 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/timerTv"
+                android:id="@+id/timerMinTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="00"
+                android:text="25"
                 android:textSize="120sp"
                 tools:ignore="HardcodedText,MissingPrefix"/>
 

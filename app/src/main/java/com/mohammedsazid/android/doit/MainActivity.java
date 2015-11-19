@@ -43,8 +43,6 @@ import android.widget.TextView;
 import com.mohammedsazid.android.doit.services.TimerService;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -78,6 +76,26 @@ public class MainActivity extends AppCompatActivity {
                 this, R.anim.toggle_button_anim);
     }
 
+    private void timeRemaining() {
+        SimpleDateFormat sdfMin =
+                new SimpleDateFormat("mm", Locale.getDefault());
+        SimpleDateFormat sdfSec =
+                new SimpleDateFormat("ss", Locale.getDefault());
+        String timerTextMin;
+        String timerTextSec;
+
+        long time = TimerService.TIME_REMAINING;
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(time);
+        long secs = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.MINUTES.toMillis(minutes));
+
+        timerTextMin = sdfMin.format(TimeUnit.MINUTES.toMillis(minutes));
+        timerTextSec = sdfSec.format(TimeUnit.SECONDS.toMillis(secs));
+
+        mTimerMinTv.setText(timerTextMin);
+        mTimerSecTv.setText(timerTextSec);
+    }
+
     private void initTypeface() {
         Typeface font = Typeface.createFromAsset(getAssets(), "fonts/d7_mono.ttf");
         mTimerMinTv.setTypeface(font);
@@ -88,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindViews() {
         mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
-        mTimerMinTv = (TextView) findViewById(R.id.timerTv);
+        mTimerMinTv = (TextView) findViewById(R.id.timerMinTv);
         mTimerSecTv = (TextView) findViewById(R.id.timerSecTv);
         mMinIndicatorTv = (TextView) findViewById(R.id.minIndicatorTv);
         mSecIndicatorTv = (TextView) findViewById(R.id.secIndicatorTv);
@@ -127,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         registerTimerTickReceiver();
+        timeRemaining();
     }
 
     @Override
@@ -138,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerTimerTickReceiver() {
         timerBroadcastReceiver = new BroadcastReceiver() {
-            Calendar tickTime = new GregorianCalendar();
             SimpleDateFormat sdfMin =
                     new SimpleDateFormat("mm", Locale.getDefault());
             SimpleDateFormat sdfSec =
@@ -149,9 +167,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(TimerService.ACTION_TIMER_TICK)) {
-                    tickTime.setTimeInMillis(intent.getLongExtra(
-                            TimerService.EXTRA_REMAINING_TIME,
-                            System.currentTimeMillis()));
                     long time = intent.getLongExtra(
                             TimerService.EXTRA_REMAINING_TIME,
                             System.currentTimeMillis());
@@ -183,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, TimerService.class);
             stopService(intent);
             mTimerMinTv.setText("25");
+            mTimerSecTv.setText("00");
         }
         TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
     }

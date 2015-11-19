@@ -31,10 +31,12 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.mohammedsazid.android.doit.MainActivity;
 import com.mohammedsazid.android.doit.R;
@@ -48,6 +50,7 @@ public class TimerService extends Service {
             = "com.mohammedsazid.android.doit.extra.remaining_time";
     public static final long COUNTDOWN_TIME = TimeUnit.MINUTES.toMillis(25);
     public static final long BREAK_TIME = TimeUnit.MINUTES.toMillis(5);
+    public static long TIME_REMAINING = COUNTDOWN_TIME;
     private static final String LOG_TAG = TimerService.class.getSimpleName();
     public static boolean SERVICE_IS_RUNNING = false;
     private CounterClass mTimeCounter;
@@ -147,7 +150,7 @@ public class TimerService extends Service {
 
         @Override
         public void onTick(long millisUntilFinished) {
-            Log.d(LOG_TAG, "Tick");
+            TIME_REMAINING = millisUntilFinished;
             Intent intent = new Intent(ACTION_TIMER_TICK);
             intent.putExtra(EXTRA_REMAINING_TIME, millisUntilFinished);
             sendBroadcast(intent);
@@ -162,10 +165,11 @@ public class TimerService extends Service {
     }
 
     private void stopTimerService() {
+        TIME_REMAINING = COUNTDOWN_TIME;
         Intent intent = new Intent(ACTION_TIMER_TICK);
-        intent.putExtra(EXTRA_REMAINING_TIME, 0l);
-        sendBroadcast(intent);
+        intent.putExtra(EXTRA_REMAINING_TIME, TIME_REMAINING);
         SERVICE_IS_RUNNING = false;
+        sendBroadcast(intent);
         stopForeground(true);
         notifyTaskFinished();
 
@@ -182,6 +186,16 @@ public class TimerService extends Service {
         } else {
             am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + BREAK_TIME, pi);
         }
+
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(
+                        TimerService.this,
+                        "Time's up!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
 
         stopSelf();
     }
