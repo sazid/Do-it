@@ -29,10 +29,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.mohammedsazid.android.doit.services.TimerService;
@@ -43,11 +48,15 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
     BroadcastReceiver timerBroadcastReceiver;
 
-    //    private FloatingActionButton mTimerBtn;
+    private FloatingActionButton mTimerBtn;
     private TextView mTimerMinTv;
     private TextView mTimerSecTv;
     private TextView mMinIndicatorTv;
     private TextView mSecIndicatorTv;
+
+    private Animation mTimerBtnAnim;
+
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +65,14 @@ public class MainActivity extends AppCompatActivity {
         bindViews();
         acquireLock();
         initTypeface();
+
+        if (TimerService.SERVICE_IS_RUNNING) {
+            mTimerBtn.setImageDrawable(
+                    ContextCompat.getDrawable(this, R.drawable.ic_stop));
+        }
+
+        mTimerBtnAnim = AnimationUtils.loadAnimation(
+                this, R.anim.toggle_button_anim);
     }
 
     private void initTypeface() {
@@ -67,11 +84,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-//        mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
+        mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
         mTimerMinTv = (TextView) findViewById(R.id.timerTv);
         mTimerSecTv = (TextView) findViewById(R.id.timerSecTv);
         mMinIndicatorTv = (TextView) findViewById(R.id.minIndicatorTv);
         mSecIndicatorTv = (TextView) findViewById(R.id.secIndicatorTv);
+    }
+
+    private void animateToggleButton(boolean toggle) {
+        mTimerBtn.startAnimation(mTimerBtnAnim);
+
+        if (toggle) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mTimerBtn.setImageDrawable(
+                            ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_stop));
+                }
+            }, 200);
+        } else {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mTimerBtn.setImageDrawable(
+                            ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play));
+                }
+            }, 200);
+        }
     }
 
     private void acquireLock() {
@@ -114,10 +153,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void toggleTimer(View view) {
         if (!TimerService.SERVICE_IS_RUNNING) {
+            animateToggleButton(true);
             Log.d("CLICK", "Starting service");
             Intent intent = new Intent(this, TimerService.class);
             startService(intent);
         } else {
+            animateToggleButton(false);
             Log.d("CLICK", "Stopping service");
             Intent intent = new Intent(this, TimerService.class);
             stopService(intent);
