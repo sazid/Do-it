@@ -27,6 +27,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -43,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
     BroadcastReceiver timerBroadcastReceiver;
 
     //    private FloatingActionButton mTimerBtn;
-    private TextView mTimerTv;
+    private TextView mTimerMinTv;
+    private TextView mTimerSecTv;
+    private TextView mMinIndicatorTv;
+    private TextView mSecIndicatorTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +55,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         bindViews();
         acquireLock();
+        initTypeface();
+    }
+
+    private void initTypeface() {
+        Typeface font = Typeface.createFromAsset(getAssets(), "fonts/d7_mono.ttf");
+        mTimerMinTv.setTypeface(font);
+        mTimerSecTv.setTypeface(font);
+        mMinIndicatorTv.setTypeface(font);
+        mSecIndicatorTv.setTypeface(font);
     }
 
     private void bindViews() {
 //        mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
-        mTimerTv = (TextView) findViewById(R.id.timerTv);
+        mTimerMinTv = (TextView) findViewById(R.id.timerTv);
+        mTimerSecTv = (TextView) findViewById(R.id.timerSecTv);
+        mMinIndicatorTv = (TextView) findViewById(R.id.minIndicatorTv);
+        mSecIndicatorTv = (TextView) findViewById(R.id.secIndicatorTv);
     }
 
     private void acquireLock() {
@@ -84,11 +100,11 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(TimerService.ACTION_TIMER_TICK)) {
                     SimpleDateFormat sdf =
-                            new SimpleDateFormat("mm:ss", Locale.getDefault());
+                            new SimpleDateFormat("ss", Locale.getDefault());
                     String timerText = sdf.format(intent.getLongExtra(
                             TimerService.EXTRA_REMAINING_TIME,
-                            System.currentTimeMillis())) + "m";
-                    mTimerTv.setText(timerText);
+                            System.currentTimeMillis()));
+                    mTimerMinTv.setText(timerText);
                 }
             }
         };
@@ -105,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("CLICK", "Stopping service");
             Intent intent = new Intent(this, TimerService.class);
             stopService(intent);
-            mTimerTv.setText("25:00m");
+            mTimerMinTv.setText("25");
         }
         TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
     }
