@@ -23,6 +23,7 @@
 
 package com.mohammedsazid.android.doit;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -201,5 +202,14 @@ public class MainActivity extends AppCompatActivity {
             mTimerSecTv.setText("00");
         }
         TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
+    }
+
+    public void showHelp(View view) {
+        new AlertDialog.Builder(this)
+                .setTitle("Info")
+                .setMessage(getString(R.string.info))
+                .setIcon(R.drawable.ic_help)
+                .create()
+                .show();
     }
 }

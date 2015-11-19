@@ -2,5 +2,13 @@
     <string name="app_name">Do it</string>
 
     <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="info">Do it
+        \n___
+        \nDivide all your works into 25 minutes and be more productive!
+        \n\n___
+        \nAuthor:
+        \nMohammed Sazid Al Rashid
+        \nsazidozon@gmail.com
+    </string>
 </resources>
