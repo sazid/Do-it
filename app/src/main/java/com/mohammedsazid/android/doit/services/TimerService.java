@@ -87,7 +87,7 @@ public class TimerService extends Service {
         Notification notification = new NotificationCompat.Builder(this)
                 .setContentTitle("Do it")
                 .setContentText("Go back to work!")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_clock)
                 .setContentIntent(pi)
                 .setColor(0xFF000000)
                 .setOngoing(true)
@@ -142,13 +142,17 @@ public class TimerService extends Service {
         public void onFinish() {
             // create a notification here
             Log.d(LOG_TAG, "Task finished");
-            Intent intent = new Intent(ACTION_TIMER_TICK);
-            intent.putExtra(EXTRA_REMAINING_TIME, 0l);
-            sendBroadcast(intent);
-            SERVICE_IS_RUNNING = false;
-            stopForeground(true);
-            notifyTaskFinished();
-            stopSelf();
+            stopTimerService();
         }
+    }
+
+    private void stopTimerService() {
+        Intent intent = new Intent(ACTION_TIMER_TICK);
+        intent.putExtra(EXTRA_REMAINING_TIME, 0l);
+        sendBroadcast(intent);
+        SERVICE_IS_RUNNING = false;
+        stopForeground(true);
+        notifyTaskFinished();
+        stopSelf();
     }
 }
