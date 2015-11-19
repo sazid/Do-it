@@ -43,7 +43,10 @@ import android.widget.TextView;
 import com.mohammedsazid.android.doit.services.TimerService;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     BroadcastReceiver timerBroadcastReceiver;
@@ -135,15 +138,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerTimerTickReceiver() {
         timerBroadcastReceiver = new BroadcastReceiver() {
+            Calendar tickTime = new GregorianCalendar();
+            SimpleDateFormat sdfMin =
+                    new SimpleDateFormat("mm", Locale.getDefault());
+            SimpleDateFormat sdfSec =
+                    new SimpleDateFormat("ss", Locale.getDefault());
+            String timerTextMin;
+            String timerTextSec;
+
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(TimerService.ACTION_TIMER_TICK)) {
-                    SimpleDateFormat sdf =
-                            new SimpleDateFormat("ss", Locale.getDefault());
-                    String timerText = sdf.format(intent.getLongExtra(
+                    tickTime.setTimeInMillis(intent.getLongExtra(
                             TimerService.EXTRA_REMAINING_TIME,
                             System.currentTimeMillis()));
-                    mTimerMinTv.setText(timerText);
+                    long time = intent.getLongExtra(
+                            TimerService.EXTRA_REMAINING_TIME,
+                            System.currentTimeMillis());
+
+                    long minutes = TimeUnit.MILLISECONDS.toMinutes(time);
+                    long secs = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.MINUTES.toMillis(minutes));
+
+                    timerTextMin = sdfMin.format(TimeUnit.MINUTES.toMillis(minutes));
+                    timerTextSec = sdfSec.format(TimeUnit.SECONDS.toMillis(secs));
+
+                    mTimerMinTv.setText(timerTextMin);
+                    mTimerSecTv.setText(timerTextSec);
                 }
             }
         };

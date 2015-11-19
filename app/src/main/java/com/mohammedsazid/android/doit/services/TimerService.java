@@ -37,12 +37,15 @@ import android.util.Log;
 import com.mohammedsazid.android.doit.MainActivity;
 import com.mohammedsazid.android.doit.R;
 
+import java.util.concurrent.TimeUnit;
+
 public class TimerService extends Service {
     public static final String ACTION_TIMER_TICK
             = "com.mohammedsazid.android.doit.action.timer_tick";
     public static final String EXTRA_REMAINING_TIME
             = "com.mohammedsazid.android.doit.extra.remaining_time";
-    public static final long COUNTDOWN_TIME = 25 * 1000;
+    public static final long COUNTDOWN_TIME = TimeUnit.MINUTES.toMillis(25);
+    public static final long BREAK_TIME = TimeUnit.MINUTES.toMillis(5);
     private static final String LOG_TAG = TimerService.class.getSimpleName();
     public static boolean SERVICE_IS_RUNNING = false;
     private CounterClass mTimeCounter;
