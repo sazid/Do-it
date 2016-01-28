@@ -150,6 +150,14 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         registerTimerTickReceiver();
         timeRemaining();
+
+        if (TimerService.SERVICE_IS_RUNNING) {
+            mTimerBtn.setImageDrawable(
+                    ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_stop));
+        } else {
+            mTimerBtn.setImageDrawable(
+                    ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play));
+        }
     }
 
     @Override
