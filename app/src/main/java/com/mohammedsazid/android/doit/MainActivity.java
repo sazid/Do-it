@@ -23,6 +23,7 @@
 
 package com.mohammedsazid.android.doit;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,15 +31,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mohammedsazid.android.doit.services.TimerService;
@@ -47,18 +46,12 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
     BroadcastReceiver timerBroadcastReceiver;
 
-    private FloatingActionButton mTimerBtn;
     private TextView mTimerMinTv;
     private TextView mTimerSecTv;
-    private TextView mMinIndicatorTv;
-    private TextView mSecIndicatorTv;
-
-    private Animation mTimerBtnAnim;
-
-    private Handler handler = new Handler();
+    private LinearLayout mTimerViewsContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +60,6 @@ public class MainActivity extends AppCompatActivity {
         bindViews();
         acquireLock();
         initTypeface();
-
-        if (TimerService.SERVICE_IS_RUNNING) {
-            mTimerBtn.setImageDrawable(
-                    ContextCompat.getDrawable(this, R.drawable.ic_stop));
-        }
-
-        mTimerBtnAnim = AnimationUtils.loadAnimation(
-                this, R.anim.toggle_button_anim);
     }
 
     private void timeRemaining() {
@@ -104,38 +89,13 @@ public class MainActivity extends AppCompatActivity {
         Typeface font = Typeface.createFromAsset(getAssets(), "fonts/d7_mono.ttf");
         mTimerMinTv.setTypeface(font);
         mTimerSecTv.setTypeface(font);
-        mMinIndicatorTv.setTypeface(font);
-        mSecIndicatorTv.setTypeface(font);
     }
 
     private void bindViews() {
-        mTimerBtn = (FloatingActionButton) findViewById(R.id.timerBtn);
         mTimerMinTv = (TextView) findViewById(R.id.timerMinTv);
         mTimerSecTv = (TextView) findViewById(R.id.timerSecTv);
-        mMinIndicatorTv = (TextView) findViewById(R.id.minIndicatorTv);
-        mSecIndicatorTv = (TextView) findViewById(R.id.secIndicatorTv);
-    }
-
-    private void animateToggleButton(boolean toggle) {
-        mTimerBtn.startAnimation(mTimerBtnAnim);
-
-        if (toggle) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mTimerBtn.setImageDrawable(
-                            ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_stop));
-                }
-            }, 200);
-        } else {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mTimerBtn.setImageDrawable(
-                            ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play));
-                }
-            }, 200);
-        }
+        mTimerViewsContainer = (LinearLayout) findViewById(R.id.timer_view_container);
+        mTimerViewsContainer.setOnTouchListener(this);
     }
 
     private void acquireLock() {
@@ -150,14 +110,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         registerTimerTickReceiver();
         timeRemaining();
-
-        if (TimerService.SERVICE_IS_RUNNING) {
-            mTimerBtn.setImageDrawable(
-                    ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_stop));
-        } else {
-            mTimerBtn.setImageDrawable(
-                    ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_play));
-        }
     }
 
     @Override
@@ -198,21 +150,27 @@ public class MainActivity extends AppCompatActivity {
                 new IntentFilter(TimerService.ACTION_TIMER_TICK));
     }
 
-    public void toggleTimer(View view) {
-        if (!TimerService.SERVICE_IS_RUNNING) {
-            animateToggleButton(true);
-            Log.d("CLICK", "Starting service");
-            Intent intent = new Intent(this, TimerService.class);
-            startService(intent);
-        } else {
-            animateToggleButton(false);
-            Log.d("CLICK", "Stopping service");
-            Intent intent = new Intent(this, TimerService.class);
-            stopService(intent);
-            mTimerMinTv.setText("25");
-            mTimerSecTv.setText("00");
+    @SuppressLint("SetTextI18n")
+    public void toggleTimer(View v) {
+        if (v.getId() == R.id.timer_view_container) {
+            v.performHapticFeedback(
+                    HapticFeedbackConstants.VIRTUAL_KEY,
+                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+            );
+
+            if (!TimerService.SERVICE_IS_RUNNING) {
+                Log.d("CLICK", "Starting service");
+                Intent intent = new Intent(this, TimerService.class);
+                startService(intent);
+            } else {
+                Log.d("CLICK", "Stopping service");
+                Intent intent = new Intent(this, TimerService.class);
+                stopService(intent);
+                mTimerMinTv.setText("25");
+                mTimerSecTv.setText("00");
+            }
+            TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
         }
-        TimerService.SERVICE_IS_RUNNING = !TimerService.SERVICE_IS_RUNNING;
     }
 
     public void showHelp(View view) {
@@ -222,5 +180,21 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_help)
                 .create()
                 .show();
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v.getId() == R.id.timer_view_container) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mTimerViewsContainer.setAlpha(0.6f);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    mTimerViewsContainer.setAlpha(1f);
+                    break;
+            }
+        }
+
+        return false;
     }
 }
