@@ -27,9 +27,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -177,6 +179,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         new AlertDialog.Builder(this)
                 .setTitle("Info")
                 .setMessage(getString(R.string.info))
+                .setPositiveButton("EMAIL DEV", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        composeEmail(
+                                new String[]{"sazidozon@gmail.com"},
+                                "[Do-it]: {your subject here}",
+                                ""
+                        );
+                    }
+                })
                 .setIcon(R.drawable.ic_help)
                 .create()
                 .show();
@@ -196,5 +208,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         }
 
         return false;
+    }
+
+    public void composeEmail(String[] addresses, String subject, String body) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, body);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 }

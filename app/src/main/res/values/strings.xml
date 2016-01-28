@@ -6,9 +6,12 @@
     <string name="info">Do it
         \n___
         \nDivide all your works into 25 minutes and be more productive!
+        \n[This is known as the \"Pomodoro technique\", try looking up on Wikipedia to learn more about it]
+        \n\nAll you have to do is start the timer and start doing whatever you want and do it non-stop for 25
+        minutes. The app will automatically remind you to take a 5 minute break after the work period is over.
+        It\'ll also notify you to start work after the break ;)
         \n\n___
         \nAuthor:
         \nMohammed Sazid Al Rashid
-        \nsazidozon@gmail.com
     </string>
 </resources>
