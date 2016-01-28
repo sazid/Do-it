@@ -62,6 +62,7 @@ public class TimerService extends Service {
 
     @Override
     public void onDestroy() {
+        TIME_REMAINING = COUNTDOWN_TIME;
         mTimeCounter.cancel();
         super.onDestroy();
     }
@@ -166,9 +167,9 @@ public class TimerService extends Service {
 
     private void stopTimerService() {
         TIME_REMAINING = COUNTDOWN_TIME;
+        SERVICE_IS_RUNNING = false;
         Intent intent = new Intent(ACTION_TIMER_TICK);
         intent.putExtra(EXTRA_REMAINING_TIME, TIME_REMAINING);
-        SERVICE_IS_RUNNING = false;
         sendBroadcast(intent);
         stopForeground(true);
         notifyTaskFinished();

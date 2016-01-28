@@ -1,7 +1,3 @@
 <component name="CopyrightManager">
-  <settings default="MIT License">
-    <LanguageOptions name="__TEMPLATE__">
-      <option name="box" value="true" />
-    </LanguageOptions>
-  </settings>
+  <settings default="" />
 </component>

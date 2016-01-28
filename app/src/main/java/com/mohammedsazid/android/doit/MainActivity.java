@@ -86,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
         String timerTextSec;
 
         long time = TimerService.TIME_REMAINING;
+        if (!TimerService.SERVICE_IS_RUNNING) {
+            time = TimeUnit.MINUTES.toMillis(25);
+        }
 
         long minutes = TimeUnit.MILLISECONDS.toMinutes(time);
         long secs = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.MINUTES.toMillis(minutes));
